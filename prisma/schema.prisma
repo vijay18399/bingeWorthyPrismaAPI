@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  username     String?
+  password     String?
+  email        String
+  profile      String?
+  role         String @default("USER")
+  created_at   DateTime @default(now())
+  contributions Content[]
+  reactions    Reaction[]
+}
+
+model Content {
+  id           String   @id @default(cuid())
+  title        String
+  plot         String?
+  poster       String?
+  tags         String?
+  release_date DateTime?
+  genres       String?
+  content_type String
+  user_id      String
+  addedBy      User @relation(fields: [user_id], references: [id],onDelete: Cascade)
+  seasons      Season[]  
+  last_update  DateTime @default(now())
+  reactions    Reaction[]
+}
+
+model Season {
+  id           String   @id @default(cuid())
+  number       Int
+  description  String?
+  poster       String?
+  episodes     Episode[]  // Enable cascading delete
+  content_id   String
+  content      Content @relation(fields: [content_id], references: [id],onDelete: Cascade)
+}
+
+model Episode {
+  id          String      @id @default(cuid())
+  number      Int
+  description String?
+  poster      String?
+  air_date    DateTime?
+  season_id   String
+  season      Season @relation(fields: [season_id], references: [id],onDelete: Cascade)
+}
+
+model Reaction {
+  user        User    @relation(fields: [user_id], references: [id],onDelete: Cascade)
+  user_id     String 
+  content     Content @relation(fields: [content_id], references: [id],onDelete: Cascade)
+  content_id  String 
+  reaction    String
+  type        String
+  @@id([user_id, content_id])
+}
+
+
+
+
